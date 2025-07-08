@@ -51,8 +51,7 @@ impl DB {
 
         let metadata = freq_tree.get(byte)?.expect("freq is not found");
         let mut meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
-        meta.freq_incretement();
-        let _ = freq_tree.insert(&key, meta.to_u8()?)?;
+        let _ = freq_tree.compare_and_swap(byte, Some(metadata), Some(meta.freq_incretement().to_u8().expect("Isnt able to serialize into u8")));
 
         Ok(())
 

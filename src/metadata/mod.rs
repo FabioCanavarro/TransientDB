@@ -23,12 +23,14 @@ impl Metadata {
         }
     }
 
-    pub fn freq_incretement(&mut self) {
-        self.freq += 1
+    pub fn freq_incretement(mut self) -> Metadata {
+        self.freq +=1;
+        self
     }
 
-    pub fn freq_decretement(&mut self) {
-        self.freq -= 1
+    pub fn freq_decretement(mut self) -> Metadata {
+        self.freq -= 1;
+        self
     }
 
     pub fn to_u8(&self) -> Result<Vec<u8>, EncodeError>{
