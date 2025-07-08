@@ -22,18 +22,24 @@ impl DB {
             DB { db, data_tree, meta_tree }
         )
     }
-    pub fn set(&self, key: &str, val: &str) -> Result<(), sled::Error>{
+    pub fn set(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
         let data_tree = &self.data_tree;
         let _ =data_tree.insert(key.as_bytes(), val.as_bytes())?;
 
         Ok(())
     }
 
-    pub fn set_overwrite_metadata(&self, key: &str, val: &str) -> Result<(), sled::Error>{
+    pub fn set_overwrite_metadata(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
-        let _ =data_tree.insert(key.as_bytes(), val.as_bytes())?;
-        let _ = freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
+        let l: Result<(),TransactionError> = self.db.transaction(
+            |_| {
+                data_tree.insert(key.as_bytes(), val.as_bytes())?;
+                freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
+                Ok(())
+            }
+        );
+        l?;
         
         Ok(())
     }
