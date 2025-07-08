@@ -97,7 +97,7 @@ Contributions are welcome and greatly appreciated\! This project is a fantastic 
 If you're interested in helping, please:
 
 1.  Fork the repository.
-2.  Take a look at our [Roadmap](https://www.google.com/search?q=%23%EF%B8%8F-roadmap) and the open [Issues](https://www.google.com/search?q=https://github.com/FabioCanavarro/TransientDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
+2.  Take a look at our [Roadmap](#roadmap) and the open [Issues](https://github.com/FabioCanavarro/TransientDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
 3.  Feel free to open a new issue to discuss a feature or a bug.
 4.  Submit a pull request with your changes. Please ensure your code is tested and documented.
 
