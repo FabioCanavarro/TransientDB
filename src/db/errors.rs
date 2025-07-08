@@ -1,7 +1,7 @@
 use std::{error::Error, fmt::Display};
 
 #[derive(Debug)]
-enum TransientError {
+pub enum TransientError {
     IncretmentFailure
 }
 

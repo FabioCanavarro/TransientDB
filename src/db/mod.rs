@@ -1,6 +1,7 @@
 pub mod errors;
 
 use std::{error::Error, path::Path, str::from_utf8};
+use errors::TransientError;
 use sled::{transaction::TransactionError, Config, Db, Tree};
 
 use crate::metadata::Metadata;
@@ -30,7 +31,7 @@ impl DB {
         let byte = key.as_bytes();
         let l: Result<(), TransactionError> = self.db.transaction(
             |_| {
-                if !data_tree.contains_key(byte)? {
+                if !freq_tree.contains_key(byte)? {
                     freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
                 }
                 data_tree.insert(key.as_bytes(), val.as_bytes())?;
@@ -75,7 +76,7 @@ impl DB {
         let byte = &key.as_bytes();
 
         loop {
-            let metadata = freq_tree.get(byte)?;
+            let metadata = freq_tree.get(byte)?.unwrap_or(Err(TransientError::IncretmentFailure)?);
             let meta = Metadata::from_u8(&metadata.to_vec()[..])?;
             let s = freq_tree.compare_and_swap(byte, Some(metadata), Some(meta.freq_incretement().to_u8()?));
             match s {
