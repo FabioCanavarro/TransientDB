@@ -1,10 +1,11 @@
 use std::{error::Error, path::Path, str::from_utf8};
-use sled::{Config, Tree};
+use sled::{transaction::{ConflictableTransactionError, TransactionError}, Config, Db, Tree};
 
 use crate::metadata::Metadata;
 
 #[derive(Debug)]
 struct DB {
+    db: Db,
     data_tree: Tree,
     meta_tree: Tree
 }
@@ -18,7 +19,7 @@ impl DB {
         let data_tree = db.open_tree("data_tree")?;
         let meta_tree = db.open_tree("freq_tree")?;
         Ok(
-            DB { data_tree, meta_tree }
+            DB { db, data_tree, meta_tree }
         )
     }
     pub fn set(&self, key: &str, val: &str) -> Result<(), sled::Error>{
@@ -50,7 +51,7 @@ impl DB {
         let byte = &key.as_bytes();
 
         let metadata = freq_tree.get(byte)?.expect("freq is not found");
-        let mut meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
+        let meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
         let _ = freq_tree.compare_and_swap(byte, Some(metadata), Some(meta.freq_incretement().to_u8().expect("Isnt able to serialize into u8")));
 
         Ok(())
@@ -61,8 +62,15 @@ impl DB {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
         let byte = &key.as_bytes();
-        let _ = data_tree.remove(byte)?;
-        let _ =freq_tree.remove(byte)?;
+        let l: Result<(), TransactionError> = self.db.transaction(
+            |_| {
+                    data_tree.remove(byte)?;
+                    freq_tree.remove(byte)?;
+
+                    Ok(())
+            }
+        );
+        l?;
         Ok(())
         
 
