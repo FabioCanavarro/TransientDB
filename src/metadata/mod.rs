@@ -1,5 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use bincode::{error::{DecodeError, EncodeError}, serde::{decode_from_slice, encode_to_vec}};
 use serde::{Deserialize, Serialize};
 
 
@@ -30,7 +31,19 @@ impl Metadata {
         self.freq -= 1
     }
 
-    pub fn to_u8(&self) -> Result<Vec<u8>, bincode::error::EncodeError>{
-        bincode::serde::encode_to_vec(self, bincode::config::standard())
+    pub fn to_u8(&self) -> Result<Vec<u8>, EncodeError>{
+        encode_to_vec(
+            self,
+            bincode::config::standard()
+        )
+    }
+
+    pub fn from_u8(slice: &[u8]) -> Result<Metadata, DecodeError> {
+        Ok(
+            decode_from_slice(
+                    slice,
+                bincode::config::standard()
+            )?.0
+        )
     }
 }
