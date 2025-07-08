@@ -23,9 +23,18 @@ impl DB {
         let db = &self.db;
         let data_tree = db.open_tree("data_tree")?;
         let freq_tree = db.open_tree("freq_tree")?;
-        let _ =data_tree.insert(key, val);
-        let _ = freq_tree.insert(key, Metadata::new().to_u8().expect("Cant serialize to u8"));
+        let _ =data_tree.insert(key.as_bytes(), val.as_bytes())?;
+        let _ = freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
         
         todo!()
+    }
+
+    pub fn get(&self, key: String) -> Result<(), sled::Error> {
+        let db = &self.db;
+        let data_tree = db.open_tree("data_tree")?;
+        let freq_tree = db.open_tree("freq_tree")?;
+        // FIX: Proper error handling to take in Result<Option<>> rather than just Result<>
+        let key = data_tree.get(key)?.expect("key is not found");
+        let metadata = freq_tree.get(key)?.expect("freq is not found");
     }
 }
