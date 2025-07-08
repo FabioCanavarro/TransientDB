@@ -1,7 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[derive(Debug)]
-struct Metadata {
+use serde::{Deserialize, Serialize};
+
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct Metadata {
     pub freq: u64,
     // NOTE: second since the Unix epoch 
     pub created_at: u64
@@ -25,5 +28,9 @@ impl Metadata {
 
     pub fn freq_decretement(&mut self) {
         self.freq -= 1
+    }
+
+    pub fn to_u8(&self) -> Result<Vec<u8>, bincode::error::EncodeError>{
+        bincode::serde::encode_to_vec(self, bincode::config::standard())
     }
 }

@@ -3,7 +3,12 @@ name = "transient_db"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+
+[[bin]]
+name = "transient"
+
 [dependencies]
-bincode = "2.0.1"
-serde = "1.0.219"
+bincode = { version = "2.0.1", features = ["serde", "derive"] }
+serde = { version = "1.0.219", features = ["derive"] }
 sled = "0.34.7"
