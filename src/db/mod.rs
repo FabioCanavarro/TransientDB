@@ -1,3 +1,5 @@
+pub mod errors;
+
 use std::{error::Error, path::Path, str::from_utf8};
 use sled::{transaction::TransactionError, Config, Db, Tree};
 
@@ -24,7 +26,19 @@ impl DB {
     }
     pub fn set(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
         let data_tree = &self.data_tree;
-        let _ =data_tree.insert(key.as_bytes(), val.as_bytes())?;
+        let freq_tree = &self.meta_tree;
+        let byte = key.as_bytes();
+        let l: Result<(), TransactionError> = self.db.transaction(
+            |_| {
+                if !data_tree.contains_key(byte)? {
+                    freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
+                }
+                data_tree.insert(key.as_bytes(), val.as_bytes())?;
+
+                Ok(())
+            }
+        );
+        l?;
 
         Ok(())
     }
@@ -46,7 +60,7 @@ impl DB {
 
     pub fn get(&self, key: &str) -> Result<Option<String>, Box<dyn Error>> {
         let data_tree = &self.data_tree;
-        let byte = &key.as_bytes();
+        let byte = key.as_bytes();
         let val = data_tree.get(byte)?;
         match val {
             Some(val) => Ok(Some(from_utf8(&val.to_vec())?.to_string())),
@@ -61,9 +75,9 @@ impl DB {
         let byte = &key.as_bytes();
 
         loop {
-            let metadata = freq_tree.get(byte)?.expect("freq is not found");
-            let meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
-            let s = freq_tree.compare_and_swap(byte, Some(metadata), Some(meta.freq_incretement().to_u8().expect("Isnt able to serialize into u8")));
+            let metadata = freq_tree.get(byte)?;
+            let meta = Metadata::from_u8(&metadata.to_vec()[..])?;
+            let s = freq_tree.compare_and_swap(byte, Some(metadata), Some(meta.freq_incretement().to_u8()?));
             match s {
                 Ok(_) => break,
                 Err(_) => ()
