@@ -11,8 +11,8 @@
     <a href="https://crates.io/crates/transient-db"><img src="https://img.shields.io/crates/v/transient-db.svg" alt="Crates.io"></a>
     <a href="https://docs.rs/transient-db"><img src="https://docs.rs/transient-db/badge.svg" alt="Docs.rs"></a>
     <a href="https://github.com/FabioCanavarro/TransientDB/actions"><img src="https://github.com/FabioCanavarro/TransientDB/workflows/CI/badge.svg" alt="CI Status"></a>
-    <a href="https://github.com/FabioCanavarro/TransientDB/blob/main/LICENSE-MIT"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
   -->
+  <a href="https://github.com/FabioCanavarro/TransientDB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
 
 </p>
 
@@ -103,4 +103,5 @@ If you're interested in helping, please:
 
 We are building a welcoming and collaborative community. Let's build something great together\!
 
-at your option.
+## 📜 License
+This project is licensed under the ![MIT license](http://opensource.org/licenses/MIT)
