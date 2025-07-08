@@ -1,4 +1,4 @@
-use std::{error::Error, io::Read, path::Path, str::from_utf8};
+use std::{error::Error, path::Path, str::from_utf8};
 use sled::{Config, Db};
 
 use crate::metadata::Metadata;
@@ -43,5 +43,17 @@ impl DB {
         meta.freq_incretement();
         let _ = freq_tree.insert(&val, meta.to_u8()?)?;
         Ok(from_utf8(&val.to_vec())?.to_string())
+    }
+
+    pub fn remove(&self, key: &str) -> Result<(), Box<dyn Error>> {
+        let db = &self.db;
+        let byte = &key.as_bytes();
+        let data_tree = db.open_tree("data_tree")?;
+        let freq_tree = db.open_tree("freq_tree")?;
+        let _ = data_tree.remove(byte)?;
+        let _ =freq_tree.remove(byte)?;
+        Ok(())
+        
+
     }
 }
