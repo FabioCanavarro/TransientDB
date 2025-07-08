@@ -1,4 +1,4 @@
-use std::{error::Error, path::Path, str::from_utf8};
+use std::{error::Error, io::Read, path::Path, str::from_utf8};
 use sled::{Config, Db};
 
 use crate::metadata::Metadata;
@@ -29,15 +29,19 @@ impl DB {
         todo!()
     }
 
-    pub fn get(&self, key: String) -> Result<&str, Box<dyn Error>> {
+    pub fn get(&self, key: &str) -> Result<String, Box<dyn Error>> {
         let db = &self.db;
+        let byte = &key.as_bytes();
         let data_tree = db.open_tree("data_tree")?;
         let freq_tree = db.open_tree("freq_tree")?;
         // FIX: Proper error handling to take in Result<Option<>> rather than just Result<>
-        let key = data_tree.get(key)?.expect("key is not found");
-        let metadata = freq_tree.get(key)?.expect("freq is not found");
-        let meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
-        let _ = freq_tree.insert(key.as_bytes(), meta.freq_incretement().to_u8().expect("Cant serialize to u8"))?;
-        Ok(from_utf8(key.to_vec().as_ref())?)
+        
+        let val = data_tree.get(byte)?.expect("val is not found");
+
+        let metadata = freq_tree.get(byte)?.expect("freq is not found");
+        let mut meta = Metadata::from_u8(&metadata.to_vec()[..]).expect("Cant deserialize from freq_tree to Metadata");
+        meta.freq_incretement();
+        let _ = freq_tree.insert(&val, meta.to_u8()?)?;
+        Ok(from_utf8(&val.to_vec())?.to_string())
     }
 }
