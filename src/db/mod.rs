@@ -1,5 +1,5 @@
 use std::path::Path;
-use sled::Db;
+use sled::{Config, Db};
 
 #[derive(Debug)]
 struct DB {
@@ -8,9 +8,10 @@ struct DB {
 
 impl DB {
     fn new(path: &Path) -> Result<Db, sled::Error> {
-        let db = sled::open(
-            path
-        )?;
+        let db = Config::new()
+            .path(path)
+            .cache_capacity(512 * 1024 * 1024) 
+            .open()?;
         let _ = db.open_tree("data_tree")?;
         let _ = db.open_tree("freq_tree")?;
         Ok(db)
