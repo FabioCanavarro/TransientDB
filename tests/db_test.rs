@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::{Duration, SystemTime, UNIX_EPOCH}};
+
 use tempfile::tempdir;
 use transient_db::DB;
 
@@ -27,4 +29,22 @@ fn test_rm() {
     let _ = db.get("user:1").unwrap().is_none();
 }
 
+#[test]
+fn test_get_metadata() {
+    let temp_dir = tempdir().unwrap();
 
+    let db = DB::new(&temp_dir.path()).unwrap();
+
+    db.set("user:1", "Alice").unwrap();
+
+    db.increment_frequency("user:1").unwrap();
+
+    let meta = db.get_metadata("user:1").unwrap().unwrap();
+
+    assert_eq!(meta.freq, 1);
+
+    sleep(Duration::new(1, 100));
+
+    assert!(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() > meta.created_at)
+
+}
