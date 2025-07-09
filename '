@@ -24,11 +24,10 @@ impl DB {
     pub fn set(&self, key: &str, val: &str, ttl: Option<Duration>) -> Result<(), Box<dyn Error>> {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
-        let ttl_tree = &self.ttl_tree;
         let byte = key.as_bytes();
 
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree).transaction(
-            |(data, freq, ttl_tree)| {
+        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(
+            |(data, freq)| {
                 if freq.get(byte)?.is_none() {
                     freq.insert(
                         byte,
@@ -41,12 +40,8 @@ impl DB {
                 data.insert(byte, val.as_bytes())?;
 
                 match ttl {
-                    Some(d) => {
-                        ttl_tree.insert(
-                            (d.as_secs().by:qa, byte)
-                        )?;
-                    },
-                    None => ()
+                    Some(d) => {},
+                    None => {}
                 };
 
                 Ok(())
