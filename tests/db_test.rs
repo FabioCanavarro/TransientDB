@@ -1,20 +1,16 @@
-use transient_db::db::DB;
+use transient_db::DB;
 use std::env::temp_dir;
 
-fn test_set() -> Result<(), Box<dyn std::error::Error>> {
+#[test]
+fn test_set() {
 
     let temp_dir =temp_dir();
-    let db = DB::new(temp_dir)?;
+    println!("here");
+    let db = DB::new(&temp_dir).unwrap();
+    println!("here");
 
-    db.set("user:1", "Alice")?;
-    
-    if let Some(value) = db.get("user:1")? {
-        println!("Found value: {}", value); // "Found value: Alice"
-    }
-
-    db.increment_frequency("user:1")?;
-
-    db.remove("user:1")?;
-
-    Ok(())
+    db.set("user:1", "Alice").unwrap();
+    println!("here");
+ 
+    assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
 }
