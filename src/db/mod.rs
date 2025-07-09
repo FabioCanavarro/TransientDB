@@ -40,15 +40,17 @@ impl DB {
     pub fn set_overwrite_metadata(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
-        let l: Result<(),TransactionError> = self.db.transaction(
-            |_| {
-                data_tree.insert(key.as_bytes(), val.as_bytes())?;
-                freq_tree.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
+        let byte = key.as_bytes();
+        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(
+            |(data, freq)| {
+                data.insert(key.as_bytes(), val.as_bytes())?;
+                freq.insert(key.as_bytes(), Metadata::new().to_u8().expect("Cant serialize to u8"))?;
+
                 Ok(())
             }
         );
-        l?;
-        
+        l?;        
+
         Ok(())
     }
 
@@ -86,12 +88,12 @@ impl DB {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError> = self.db.transaction(
-            |_| {
-                    data_tree.remove(byte)?;
-                    freq_tree.remove(byte)?;
+        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(
+            |(data, freq)| {
+                data.remove(*byte)?;
+                freq.remove(*byte)?;
 
-                    Ok(())
+                Ok(())
             }
         );
         l?;
