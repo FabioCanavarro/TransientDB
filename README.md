@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
+    <a href="https://crates.io/crates/transient_db"><img src="https://img.shields.io/crates/v/transient_db.svg" alt="Crates.io"></a>
   <!--
-    <a href="https://crates.io/crates/transient-db"><img src="https://img.shields.io/crates/v/transient-db.svg" alt="Crates.io"></a>
     <a href="https://docs.rs/transient-db"><img src="https://docs.rs/transient-db/badge.svg" alt="Docs.rs"></a>
     <a href="https://github.com/FabioCanavarro/TransientDB/actions"><img src="https://github.com/FabioCanavarro/TransientDB/workflows/CI/badge.svg" alt="CI Status"></a>
   -->
@@ -36,7 +36,7 @@ Get started with `TransientDB` by adding it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-transient-db = "0.1.0" # Or the latest version
+transient-db = "0.1.0"
 ````
 
 ### Basic Usage
@@ -97,7 +97,7 @@ Contributions are welcome and greatly appreciated\! This project is a fantastic 
 If you're interested in helping, please:
 
 1.  Fork the repository.
-2.  Take a look at our [Roadmap](https://www.google.com/search?q=%23%EF%B8%8F-roadmap) and the open [Issues](https://www.google.com/search?q=https://github.com/FabioCanavarro/TransientDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
+2.  Take a look at our [Roadmap](#roadmap) and the open [Issues](https://github.com/FabioCanavarro/TransientDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
 3.  Feel free to open a new issue to discuss a feature or a bug.
 4.  Submit a pull request with your changes. Please ensure your code is tested and documented.
 
