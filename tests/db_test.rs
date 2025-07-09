@@ -37,6 +37,8 @@ fn test_get_metadata() {
 
     db.set("user:1", "Alice").unwrap();
 
+    assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
+
     db.increment_frequency("user:1").unwrap();
 
     let meta = db.get_metadata("user:1").unwrap().unwrap();

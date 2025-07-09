@@ -23,17 +23,23 @@ impl DB {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
         let byte = key.as_bytes();
-        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(|(data, freq)| {
-            if freq.get(byte)?.is_some() {
-                freq.insert(
-                    key.as_bytes(),
-                    Metadata::new().to_u8().expect("Cant serialize to u8"),
-                )?;
-            }
-            data.insert(key.as_bytes(), val.as_bytes())?;
 
-            Ok(())
-        });
+        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(
+            |(data, freq)| {
+                if freq.get(byte)?.is_none() {
+                    freq.insert(
+                        byte,
+                        Metadata::new().to_u8().expect("Cant serialize to u8"),
+                    )?;
+                    assert!(freq.get(byte)?.is_some());
+
+                }
+
+                data.insert(byte, val.as_bytes())?;
+
+                Ok(())
+            }
+        );
         l?;
 
         Ok(())
@@ -73,8 +79,8 @@ impl DB {
         loop {
             let metadata = freq_tree
                 .get(byte)?
-                .unwrap_or(Err(TransientError::IncretmentFailure)?);
-            let meta = Metadata::from_u8(&metadata.to_vec()[..])?;
+                .ok_or(TransientError::IncretmentFailure)?;
+            let meta = Metadata::from_u8(&metadata.to_vec())?;
             let s = freq_tree.compare_and_swap(
                 byte,
                 Some(metadata),
