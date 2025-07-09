@@ -26,13 +26,17 @@ impl DB {
         let freq_tree = &self.meta_tree;
         let ttl_tree = &self.ttl_tree;
         let byte = key.as_bytes();
+        let ttl_sec = match ttl {
+            Some(t) => Some(t.as_secs()),
+            None => None
+        };
 
         let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
                 if freq.get(byte)?.is_none() {
                     freq.insert(
                         byte,
-                        Metadata::new().to_u8().expect("Cant serialize to u8"),
+                        Metadata::new(ttl_sec).to_u8().expect("Cant serialize to u8"),
                     )?;
                     assert!(freq.get(byte)?.is_some());
 
@@ -40,10 +44,11 @@ impl DB {
 
                 data.insert(byte, val.as_bytes())?;
 
-                match ttl {
+                match ttl_sec {
                     Some(d) => {
                         ttl_tree.insert(
-                            (d.as_secs().by:qa, byte)
+                            [&d.to_be_bytes()[..], &byte[..]].concat(),
+                            byte
                         )?;
                     },
                     None => ()
@@ -52,23 +57,6 @@ impl DB {
                 Ok(())
             }
         );
-        l?;
-
-        Ok(())
-    }
-
-    pub fn set_overwrite_metadata(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>> {
-        let data_tree = &self.data_tree;
-        let freq_tree = &self.meta_tree;
-        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(|(data, freq)| {
-            data.insert(key.as_bytes(), val.as_bytes())?;
-            freq.insert(
-                key.as_bytes(),
-                Metadata::new().to_u8().expect("Cant serialize to u8"),
-            )?;
-
-            Ok(())
-        });
         l?;
 
         Ok(())

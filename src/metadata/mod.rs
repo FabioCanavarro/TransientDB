@@ -11,10 +11,11 @@ pub struct Metadata {
     pub freq: u64,
     // NOTE: second since the Unix epoch
     pub created_at: u64,
+    pub ttl: Option<u64>
 }
 
 impl Metadata {
-    pub fn new() -> Metadata {
+    pub fn new(ttl: Option<u64>) -> Metadata {
         let currtime = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Cant get the current time")
@@ -22,6 +23,7 @@ impl Metadata {
         Metadata {
             freq: 0,
             created_at: currtime,
+            ttl
         }
     }
 
