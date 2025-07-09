@@ -26,3 +26,5 @@ fn test_rm() {
 
     let _ = db.get("user:1").unwrap().is_none();
 }
+
+

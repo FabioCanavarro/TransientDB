@@ -102,4 +102,39 @@ impl DB {
         l?;
         Ok(())
     }
+
+    pub fn get_metadata(&self, key: &str) -> Result<Option<Metadata>, Box<dyn Error>> {
+        let freq_tree = &self.meta_tree;
+        let byte = key.as_bytes();
+        let meta = freq_tree.get(byte)?;
+        match meta {
+            Some(val) => Ok(Some(Metadata::from_u8(&val.to_vec())?)),
+            None => Ok(None),
+        }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
