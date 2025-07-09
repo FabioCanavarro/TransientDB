@@ -1,11 +1,10 @@
-use transient_db::DB;
 use tempfile::tempdir;
+use transient_db::DB;
 
 #[test]
 fn test_set() {
-
     let temp_dir = tempdir().unwrap();
-    
+
     let db = DB::new(&temp_dir.path()).unwrap();
 
     db.set("user:1", "Alice").unwrap();
@@ -15,9 +14,8 @@ fn test_set() {
 
 #[test]
 fn test_rm() {
+    let temp_dir = tempdir().unwrap();
 
-    let temp_dir =  tempdir().unwrap();
-    
     let db = DB::new(&temp_dir.path()).unwrap();
 
     db.set("user:1", "Alice").unwrap();
