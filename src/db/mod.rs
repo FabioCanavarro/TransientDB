@@ -15,7 +15,7 @@ impl DB {
         let data_tree = db.open_tree("data_tree")?;
         let meta_tree = db.open_tree("freq_tree")?;
         Ok(
-            DB { db, data_tree, meta_tree }
+            DB {data_tree, meta_tree }
         )
     }
     pub fn set(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
@@ -40,7 +40,6 @@ impl DB {
     pub fn set_overwrite_metadata(&self, key: &str, val: &str) -> Result<(), Box<dyn Error>>{
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
-        let byte = key.as_bytes();
         let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(
             |(data, freq)| {
                 data.insert(key.as_bytes(), val.as_bytes())?;
