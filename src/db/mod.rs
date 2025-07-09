@@ -2,16 +2,9 @@ pub mod errors;
 
 use std::{error::Error, path::Path, str::from_utf8};
 use errors::TransientError;
-use sled::{transaction::TransactionError, Config, Db, Tree};
+use sled::{transaction::TransactionError, Config};
 
-use crate::metadata::Metadata;
-
-#[derive(Debug)]
-struct DB {
-    db: Db,
-    data_tree: Tree,
-    meta_tree: Tree
-}
+use crate::{metadata::Metadata, DB};
 
 impl DB {
     pub fn new(path: &Path) -> Result<DB, sled::Error> {
