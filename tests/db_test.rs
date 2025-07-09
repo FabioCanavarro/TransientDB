@@ -8,7 +8,6 @@ fn test_set() {
     println!("here");
     let db = DB::new(&temp_dir).unwrap();
     println!("here");
-
     db.set("user:1", "Alice").unwrap();
     println!("here");
  

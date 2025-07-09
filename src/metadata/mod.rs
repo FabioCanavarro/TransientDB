@@ -34,7 +34,6 @@ impl Metadata {
     }
 
     pub fn to_u8(&self) -> Result<Vec<u8>, EncodeError>{
-        println!("converting");
         encode_to_vec(
             self,
             bincode::config::standard()
