@@ -9,7 +9,7 @@ fn test_set() {
 
     let db = DB::new(&temp_dir.path()).unwrap();
 
-    db.set("user:1", "Alice").unwrap();
+    db.set("user:1", "Alice", None).unwrap();
 
     assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
 }
@@ -20,7 +20,7 @@ fn test_rm() {
 
     let db = DB::new(&temp_dir.path()).unwrap();
 
-    db.set("user:1", "Alice").unwrap();
+    db.set("user:1", "Alice", None).unwrap();
 
     assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
 
@@ -35,7 +35,7 @@ fn test_get_metadata() {
 
     let db = DB::new(&temp_dir.path()).unwrap();
 
-    db.set("user:1", "Alice").unwrap();
+    db.set("user:1", "Alice", None).unwrap();
 
     assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
 
