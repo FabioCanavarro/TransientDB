@@ -25,7 +25,7 @@ impl DB {
             data_tree,
             meta_tree,
             ttl_tree,
-            ttl_thread: thread
+            ttl_thread: Some(thread)
         })
     }
     pub fn set(&self, key: &str, val: &str, ttl: Option<Duration>) -> Result<(), Box<dyn Error>> {
@@ -127,7 +127,11 @@ impl DB {
     }
 }
 
-
+impl Drop for DB {
+    fn drop(&mut self) {
+        self.ttl_thread.take().expect("Fail to take ownership of ttl_thread").join().expect("Joining failed");
+    }
+}
 
 
 
