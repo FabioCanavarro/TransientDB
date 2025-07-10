@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{Config, transaction::TransactionError, transaction::Transactional};
-use std::{error::Error, path::Path, str::from_utf8, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, thread, time::Duration};
 
 use crate::{DB, metadata::Metadata};
 
@@ -12,13 +12,20 @@ impl DB {
             .path(path)
             .cache_capacity(512 * 1024 * 1024)
             .open()?;
+        let thread = thread::spawn(
+            || {
+                todo!()
+
+            }
+        );
         let data_tree = db.open_tree("data_tree")?;
         let meta_tree = db.open_tree("freq_tree")?;
         let ttl_tree = db.open_tree("tree_tree")?;
         Ok(DB {
             data_tree,
             meta_tree,
-            ttl_tree
+            ttl_tree,
+            ttl_thread: thread
         })
     }
     pub fn set(&self, key: &str, val: &str, ttl: Option<Duration>) -> Result<(), Box<dyn Error>> {
