@@ -8,7 +8,7 @@ pub mod metadata;
 pub struct DB {
     data_tree: Tree,
     meta_tree: Tree,
-    ttl_tree: Tree,
+    ttl_tree: Arc<Mutex<Tree>>,
     ttl_thread: Option<JoinHandle<()>>
 }
 

@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{Config, transaction::TransactionError, transaction::Transactional};
-use std::{error::Error, path::Path, str::from_utf8, thread, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, sync::{Arc, Mutex}, thread, time::Duration};
 
 use crate::{DB, metadata::Metadata};
 
@@ -12,15 +12,25 @@ impl DB {
             .path(path)
             .cache_capacity(512 * 1024 * 1024)
             .open()?;
+
+        let data_tree = db.open_tree("data_tree")?;
+        let meta_tree = db.open_tree("freq_tree")?;
+        let ttl_tree = Arc::new(Mutex::new(db.open_tree("ttl_tree")?));
+        let ttl_clone = Arc::clone(&ttl_tree);
         let thread = thread::spawn(
-            || {
-                todo!()
+            move || {
+                let keys = ttl_clone.lock().unwrap().iter();
+                for i in keys {
+                    let full_key = i.unwrap();
+                    let time = full_key.0;
+                    let key = full_key.1;
+                    let byte: [u8; 8] = time[..].try_into().expect("Cant convert from key to [u8; 8]");
+                    println!("{} : {}", from_utf8(&key[..]).expect("Cant convert from [u8] to utf8").to_string(),u64::from_be_bytes(byte));
+                }
+                
 
             }
         );
-        let data_tree = db.open_tree("data_tree")?;
-        let meta_tree = db.open_tree("freq_tree")?;
-        let ttl_tree = db.open_tree("tree_tree")?;
         Ok(DB {
             data_tree,
             meta_tree,
@@ -38,7 +48,7 @@ impl DB {
             None => None
         };
 
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree).transaction(
+        let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree.lock().unwrap()).transaction(
             |(data, freq, ttl_tree)| {
                 if freq.get(byte)?.is_none() {
                     freq.insert(
