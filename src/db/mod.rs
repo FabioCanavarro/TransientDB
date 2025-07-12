@@ -18,7 +18,7 @@ impl DB {
         let ttl_tree = Arc::new(db.open_tree("ttl_tree")?);
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
-        let thread: JoinHandle<Result<(), Box<dyn Error + Send>>> = thread::spawn(
+        let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(
             move || {
                 loop {
                     thread::sleep(Duration::new(0, 100000000));
@@ -30,8 +30,8 @@ impl DB {
                         let full_key = i.unwrap();
                         let time = full_key.0;
                         let key = full_key.1;
-                        let byte: [u8; 8] = time[..].try_into()?;
-                        println!("{} : {}", from_utf8(&key[..])?.to_string(),u64::from_be_bytes(byte));
+                        let byte: [u8; 8] = time[..].try_into().map_err(|_| TransientError::ParsingToByteFailure)?;
+                        println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
                     }
                 };
                 Ok(())
