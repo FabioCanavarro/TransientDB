@@ -1,4 +1,4 @@
-use std::{error::Error, sync::{atomic::AtomicBool, Arc}, thread::JoinHandle};
+use std::{sync::{atomic::AtomicBool, Arc}, thread::JoinHandle};
 use db::errors::TransientError;
 use sled::Tree;
 

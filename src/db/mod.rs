@@ -29,9 +29,11 @@ impl DB {
                     let keys = ttl_tree_clone.iter();
                     for i in keys {
                         let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
-                        let time = full_key.0;
+                        // NOTE: The reason time is 14 u8s long is because it is being stored like
+                        // this ([time,key], key) not ((time,key), key)
+                        let time = &full_key.0[..8];
                         let key = full_key.1;
-                        let byte: [u8; 8] = time[..].try_into().map_err(|_| TransientError::ParsingToByteError)?;
+                        let byte: [u8; 8] = time.try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
                     }
                 };
