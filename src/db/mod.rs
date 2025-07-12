@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{Config, transaction::TransactionError, transaction::Transactional};
-use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc, Mutex}, thread, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc, Mutex}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{DB, metadata::Metadata};
 
@@ -18,7 +18,7 @@ impl DB {
         let ttl_tree = db.open_tree("ttl_tree")?;
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
-        let thread = thread::spawn(
+        let thread: JoinHandle<Result<(), Box<dyn Error>>> = thread::spawn(
             move || {
                 loop {
                     thread::sleep(Duration::new(0, 100000000));
@@ -34,6 +34,7 @@ impl DB {
                         println!("{} : {}", from_utf8(&key[..]).expect("Cant convert from [u8] to utf8").to_string(),u64::from_be_bytes(byte));
                     }
                 }
+                Ok(())
                 
             }
         );

@@ -9,7 +9,7 @@ pub struct DB {
     data_tree: Tree,
     meta_tree: Tree,
     ttl_tree: Tree,
-    ttl_thread: Option<JoinHandle<ResultResult(), Box<dyn Error>>>,
+    ttl_thread: Option<JoinHandle<Result<(), Box<dyn Error>>>>,
     shutdown: Arc<AtomicBool>
 }
 
