@@ -10,6 +10,9 @@ fn test_ttl() {
     let db = DB::new(&temp_dir.path()).unwrap();
 
     db.set("user:1", "Alice", Some(Duration::new(10, 0))).unwrap();
+    db.set("user:2", "Alice", Some(Duration::new(100, 0))).unwrap();
+    db.set("user:5", "Alice", Some(Duration::new(100, 0))).unwrap();
+    db.set("user:10", "Alice", Some(Duration::new(1000, 0))).unwrap();
 
     sleep(Duration::new(10, 0));
 

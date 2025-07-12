@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{transaction::{ConflictableTransactionError, TransactionError, Transactional}, Config};
-use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}};
 
 use crate::{DB, metadata::Metadata};
 
@@ -35,6 +35,7 @@ impl DB {
                         let key = full_key.1;
                         let byte: [u8; 8] = time.try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
+                        println!("Current Time: {}", SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs());
                     }
                 };
                 Ok(())
@@ -55,9 +56,13 @@ impl DB {
         let ttl_tree = &self.ttl_tree;
         let byte = key.as_bytes();
         let ttl_sec = match ttl {
-            Some(t) => Some(t.as_secs()),
+            Some(t) => {
+                let systime = SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime");
+                Some((t + systime).as_secs())
+            },
             None => None
         };
+
 
         let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
