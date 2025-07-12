@@ -134,12 +134,12 @@ impl DB {
         let freq_tree = &self.meta_tree;
         let ttl_tree = &self.ttl_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError<TransientError>> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| 
             {
                 data.remove(*byte)?;
                 let meta = freq.get(byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
-                let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| TransientError::ParsingToByteError)?.ttl;
+                let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
                 freq.remove(*byte)?;
                 
                 match time {

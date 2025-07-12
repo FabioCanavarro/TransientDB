@@ -22,18 +22,5 @@ impl Display for TransientError {
     }
 }
 
-impl From<TransientError> for ConflictableTransactionError<TransientError> {
-    fn from(value: TransientError) -> Self {
-        match value {
-            TransientError::SledTransactionError => ConflictableTransactionError::Abort(TransientError::SledTransactionError),
-            TransientError::IncretmentError => ConflictableTransactionError::Abort(TransientError::IncretmentError),
-            TransientError::SledError { error } => ConflictableTransactionError::Abort(TransientError::SledError { error }),
-            TransientError::ParsingToByteError => ConflictableTransactionError::Abort(TransientError::ParsingToByteError),
-            TransientError::ParsingToUTF8Error => ConflictableTransactionError::Abort(TransientError::ParsingToUTF8Error)
-
-        }
-    }
-
-}
 
 impl Error for TransientError {}
