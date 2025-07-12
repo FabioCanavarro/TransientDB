@@ -62,10 +62,16 @@ impl DB {
 
                 match freq.get(byte)? {
                     Some(m) => {
-                        let time = Metadata::from_u8(&m.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
-                        if let Some(t) = time {
+                        let mut meta = Metadata::from_u8(&m.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?;
+                        if let Some(t) = meta.ttl {
                             let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
                         }
+                        meta.ttl = ttl_sec; 
+                        freq.insert(
+                            byte,
+                            meta.to_u8().expect("Cant serialize to u8"),
+                        )?;
+
                     },
                     None => {
                         freq.insert(
