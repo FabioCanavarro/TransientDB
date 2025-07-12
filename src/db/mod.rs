@@ -35,7 +35,8 @@ impl DB {
                         let key = full_key.1;
                         let byte: [u8; 8] = time.try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
-                        println!("Current Time: {}", SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs());
+                        // SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs()
+                        // NOTE: Use transaction to delete tomorrow, imma head out
                     }
                 };
                 Ok(())
