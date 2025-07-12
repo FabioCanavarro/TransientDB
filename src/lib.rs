@@ -8,8 +8,8 @@ pub mod metadata;
 pub struct DB {
     data_tree: Tree,
     meta_tree: Tree,
-    ttl_tree: Tree,
-    ttl_thread: Option<JoinHandle<Result<(), Box<dyn Error>>>>,
+    ttl_tree: Arc<Tree>,
+    ttl_thread: Option<JoinHandle<Result<(), Box<dyn Error + Send>>>>,
     shutdown: Arc<AtomicBool>
 }
 
