@@ -31,7 +31,7 @@ impl DB {
                         let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
                         let time = full_key.0;
                         let key = full_key.1;
-                        let byte: [u8; 8] = time[..].try_into().map_err(|_| TransientError::ParsingToByteFailure)?;
+                        let byte: [u8; 8] = time[..].try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
                     }
                 };
@@ -113,7 +113,7 @@ impl DB {
         loop {
             let metadata = freq_tree
                 .get(byte)?
-                .ok_or(TransientError::IncretmentFailure)?;
+                .ok_or(TransientError::IncretmentError)?;
             let meta = Metadata::from_u8(&metadata.to_vec())?;
             let s = freq_tree.compare_and_swap(
                 byte,
@@ -134,16 +134,15 @@ impl DB {
         let freq_tree = &self.meta_tree;
         let ttl_tree = &self.ttl_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError<_>> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<TransientError>> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| 
             {
                 data.remove(*byte)?;
                 let meta = freq.get(byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
-                let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()));
-                let ttl = time?.ttl;
+                let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| TransientError::ParsingToByteError)?.ttl;
                 freq.remove(*byte)?;
                 
-                match ttl {
+                match time {
                     Some(t) => 
                     {
                         let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
