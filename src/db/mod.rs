@@ -16,6 +16,7 @@ impl DB {
         let data_tree = db.open_tree("data_tree")?;
         let meta_tree = db.open_tree("freq_tree")?;
         let ttl_tree = Arc::new(db.open_tree("ttl_tree")?);
+        let ttl_tree_clone = Arc::clone(&ttl_tree);
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
         let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(
@@ -25,7 +26,7 @@ impl DB {
                     if shutdown_clone.load(std::sync::atomic::Ordering::SeqCst) {
                         break;
                     }
-                    let keys = ttl_tree.iter();
+                    let keys = ttl_tree_clone.iter();
                     for i in keys {
                         let full_key = i.unwrap();
                         let time = full_key.0;
@@ -56,7 +57,7 @@ impl DB {
             None => None
         };
 
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, *ttl_tree).transaction(
+        let l: Result<(), TransactionError> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
                 if freq.get(byte)?.is_none() {
                     freq.insert(
@@ -123,13 +124,27 @@ impl DB {
     pub fn remove(&self, key: &str) -> Result<(), Box<dyn Error>> {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
+        let ttl_tree = &self.ttl_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError> = (data_tree, freq_tree).transaction(|(data, freq)| {
-            data.remove(*byte)?;
-            freq.remove(*byte)?;
+        let l: Result<(), TransactionError> = (data_tree, freq_tree, &**ttl_tree).transaction(
+            |(data, freq, ttl_tree)| 
+            {
+                data.remove(*byte)?;
+                let time = self.get_metadata(key).expect("cant get metadata").expect("None").ttl;
+                freq.remove(*byte)?;
+                
+                match time {
+                    Some(t) => 
+                    {
+                        let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
+                    },
+                    None => ()
+                    
+                }
 
-            Ok(())
-        });
+                Ok(())
+            }
+        );
         l?;
         Ok(())
     }

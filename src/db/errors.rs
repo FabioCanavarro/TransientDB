@@ -4,7 +4,7 @@ use std::{error::Error, fmt::Display};
 pub enum TransientError {
     IncretmentFailure,
     ParsingToByteFailure,
-    ParsingToUTF8Error
+    ParsingToUTF8Error,
 }
 
 impl Display for TransientError {
@@ -12,7 +12,7 @@ impl Display for TransientError {
         match self {
             TransientError::IncretmentFailure => writeln!(f, "Incretment has failed"),
             TransientError::ParsingToByteFailure => writeln!(f, "Parsing to byte failed"),
-            TransientError::ParsingToUTF8Error => writeln!(f, "Parsing to utf8 failed")
+            TransientError::ParsingToUTF8Error => writeln!(f, "Parsing to utf8 failed"),
         }
     }
 }
