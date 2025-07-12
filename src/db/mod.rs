@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{Config, transaction::TransactionError, transaction::Transactional};
-use std::{error::Error, path::Path, str::from_utf8, sync::{Arc, Mutex}, thread, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc, Mutex}, thread, time::Duration};
 
 use crate::{DB, metadata::Metadata};
 
@@ -15,27 +15,34 @@ impl DB {
 
         let data_tree = db.open_tree("data_tree")?;
         let meta_tree = db.open_tree("freq_tree")?;
-        let ttl_tree = Arc::new(Mutex::new(db.open_tree("ttl_tree")?));
-        let ttl_clone = Arc::clone(&ttl_tree);
+        let ttl_tree = db.open_tree("ttl_tree")?;
+        let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
+        let shutdown_clone = Arc::clone(&shutdown);
         let thread = thread::spawn(
             move || {
-                let keys = ttl_clone.lock().unwrap().iter();
-                for i in keys {
-                    let full_key = i.unwrap();
-                    let time = full_key.0;
-                    let key = full_key.1;
-                    let byte: [u8; 8] = time[..].try_into().expect("Cant convert from key to [u8; 8]");
-                    println!("{} : {}", from_utf8(&key[..]).expect("Cant convert from [u8] to utf8").to_string(),u64::from_be_bytes(byte));
+                loop {
+                    thread::sleep(Duration::new(0, 100000000));
+                    if shutdown_clone.load(std::sync::atomic::Ordering::SeqCst) {
+                        break;
+                    }
+                    let keys = db.open_tree("ttl_tree").expect("cant open tree").iter();
+                    for i in keys {
+                        let full_key = i.unwrap();
+                        let time = full_key.0;
+                        let key = full_key.1;
+                        let byte: [u8; 8] = time[..].try_into().expect("Cant convert from key to [u8; 8]");
+                        println!("{} : {}", from_utf8(&key[..]).expect("Cant convert from [u8] to utf8").to_string(),u64::from_be_bytes(byte));
+                    }
                 }
                 
-
             }
         );
         Ok(DB {
             data_tree,
             meta_tree,
             ttl_tree,
-            ttl_thread: Some(thread)
+            ttl_thread: Some(thread),
+            shutdown
         })
     }
     pub fn set(&self, key: &str, val: &str, ttl: Option<Duration>) -> Result<(), Box<dyn Error>> {
@@ -48,7 +55,7 @@ impl DB {
             None => None
         };
 
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree.lock().unwrap()).transaction(
+        let l: Result<(), TransactionError> = (data_tree, freq_tree, ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
                 if freq.get(byte)?.is_none() {
                     freq.insert(
@@ -139,6 +146,9 @@ impl DB {
 
 impl Drop for DB {
     fn drop(&mut self) {
+       self.shutdown
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+
         self.ttl_thread.take().expect("Fail to take ownership of ttl_thread").join().expect("Joining failed");
     }
 }
