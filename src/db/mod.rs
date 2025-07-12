@@ -57,17 +57,25 @@ impl DB {
             None => None
         };
 
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
-                if freq.get(byte)?.is_none() {
-                    freq.insert(
-                        byte,
-                        Metadata::new(ttl_sec).to_u8().expect("Cant serialize to u8"),
-                    )?;
-                    assert!(freq.get(byte)?.is_some());
 
+                match freq.get(byte)? {
+                    Some(m) => {
+                        let time = Metadata::from_u8(&m.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
+                        if let Some(t) = time {
+                            let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
+                        }
+                    },
+                    None => {
+                        freq.insert(
+                            byte,
+                            Metadata::new(ttl_sec).to_u8().expect("Cant serialize to u8"),
+                        )?;
+
+                    }
                 }
-
+                    
                 data.insert(byte, val.as_bytes())?;
 
                 match ttl_sec {
@@ -83,7 +91,7 @@ impl DB {
                 Ok(())
             }
         );
-        l?;
+        let _ = l.map_err(|_| TransientError::SledTransactionError)?;
 
         Ok(())
     }
@@ -130,8 +138,8 @@ impl DB {
             |(data, freq, ttl_tree)| 
             {
                 data.remove(*byte)?;
-                let meta = freq_tree.get(byte)?.unwrap();
-                let time = Metadata::from_u8(&meta.to_vec()).map_err(|e| ConflictableTransactionError::Abort(()));
+                let meta = freq.get(byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
+                let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()));
                 let ttl = time?.ttl;
                 freq.remove(*byte)?;
                 
