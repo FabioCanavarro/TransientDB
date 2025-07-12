@@ -1,5 +1,4 @@
 use std::{error::Error, fmt::Display};
-use sled::transaction::{ConflictableTransactionError, TransactionError};
 
 #[derive(Debug)]
 pub enum TransientError {

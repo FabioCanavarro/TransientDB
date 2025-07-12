@@ -2,7 +2,7 @@ pub mod errors;
 
 use errors::TransientError;
 use sled::{transaction::{ConflictableTransactionError, TransactionError, Transactional}, Config};
-use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc, Mutex}, thread::{self, JoinHandle}, time::Duration};
+use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{DB, metadata::Metadata};
 
