@@ -1,7 +1,7 @@
 pub mod errors;
 
 use errors::TransientError;
-use sled::{Config, transaction::TransactionError, transaction::Transactional};
+use sled::{transaction::{ConflictableTransactionError, TransactionError, Transactional}, Config};
 use std::{error::Error, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc, Mutex}, thread::{self, JoinHandle}, time::Duration};
 
 use crate::{DB, metadata::Metadata};
@@ -28,7 +28,7 @@ impl DB {
                     }
                     let keys = ttl_tree_clone.iter();
                     for i in keys {
-                        let full_key = i.unwrap();
+                        let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
                         let time = full_key.0;
                         let key = full_key.1;
                         let byte: [u8; 8] = time[..].try_into().map_err(|_| TransientError::ParsingToByteFailure)?;
@@ -126,14 +126,16 @@ impl DB {
         let freq_tree = &self.meta_tree;
         let ttl_tree = &self.ttl_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<_>> = (data_tree, freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| 
             {
                 data.remove(*byte)?;
-                let time = self.get_metadata(key).expect("cant get metadata").expect("None").ttl;
+                let meta = freq_tree.get(byte)?.unwrap();
+                let time = Metadata::from_u8(&meta.to_vec()).map_err(|e| ConflictableTransactionError::Abort(()));
+                let ttl = time?.ttl;
                 freq.remove(*byte)?;
                 
-                match time {
+                match ttl {
                     Some(t) => 
                     {
                         let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
@@ -145,7 +147,7 @@ impl DB {
                 Ok(())
             }
         );
-        l?;
+        l.map_err(|_| TransientError::SledTransactionError)?;
         Ok(())
     }
 
@@ -165,7 +167,7 @@ impl Drop for DB {
        self.shutdown
             .store(true, std::sync::atomic::Ordering::SeqCst);
 
-        self.ttl_thread.take().expect("Fail to take ownership of ttl_thread").join().expect("Joining failed");
+        let _ = self.ttl_thread.take().expect("Fail to take ownership of ttl_thread").join().expect("Joining failed");
     }
 }
 

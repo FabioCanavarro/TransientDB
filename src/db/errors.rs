@@ -5,6 +5,8 @@ pub enum TransientError {
     IncretmentFailure,
     ParsingToByteFailure,
     ParsingToUTF8Error,
+    SledError {error: sled::Error},
+    SledTransactionError
 }
 
 impl Display for TransientError {
@@ -13,6 +15,8 @@ impl Display for TransientError {
             TransientError::IncretmentFailure => writeln!(f, "Incretment has failed"),
             TransientError::ParsingToByteFailure => writeln!(f, "Parsing to byte failed"),
             TransientError::ParsingToUTF8Error => writeln!(f, "Parsing to utf8 failed"),
+            TransientError::SledError { error } => writeln!(f, "Sled failed {}", error),
+            TransientError::SledTransactionError => writeln!(f, "Sled Transaction failed")
         }
     }
 }
