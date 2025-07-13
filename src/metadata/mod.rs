@@ -1,18 +1,10 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{time::{SystemTime, UNIX_EPOCH}};
 
 use bincode::{
     error::{DecodeError, EncodeError},
     serde::{decode_from_slice, encode_to_vec},
 };
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub struct Metadata {
-    pub freq: u64,
-    // NOTE: second since the Unix epoch
-    pub created_at: u64,
-    pub ttl: Option<u64>,
-}
+use crate::Metadata;
 
 impl Metadata {
     pub fn new(ttl: Option<u64>) -> Metadata {

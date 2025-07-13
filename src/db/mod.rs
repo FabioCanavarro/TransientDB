@@ -14,7 +14,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use crate::{DB, metadata::Metadata};
+use crate::{DB, Metadata};
 
 impl DB {
     pub fn new(path: &Path) -> Result<DB, sled::Error> {
