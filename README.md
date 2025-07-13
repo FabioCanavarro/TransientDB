@@ -101,7 +101,7 @@ If you're interested in helping, please:
 3.  Feel free to open a new issue to discuss a feature or a bug.
 4.  Submit a pull request with your changes. Please ensure your code is tested and documented.
 
-We are building a welcoming and collaborative community. Let's build something great together\!
+We are building a welcoming and collaborative community. Let's build something great together!
 
 ## 📜 License
 This project is licensed under the ![MIT license](http://opensource.org/licenses/MIT)
