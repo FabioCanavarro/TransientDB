@@ -33,8 +33,13 @@ impl DB {
                         let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
                         // NOTE: The reason time is 14 u8s long is because it is being stored like
                         // this ([time,key], key) not ((time,key), key)
+                        let key = full_key.0;
                         let key_byte = full_key.1;
-                        let time_byte: [u8; 8] = (&full_key.0[..8]).try_into().map_err(|_| TransientError::ParsingToByteError)?;
+                        if key.len() < 8 {
+                            Err(TransientError::ParsingToU64ByteFailed)?
+                        }
+                        
+                        let time_byte: [u8; 8] = (&key[..8]).try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         let time = u64::from_be_bytes(time_byte);
                         let curr_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs();
 
@@ -52,6 +57,9 @@ impl DB {
                                         }
                                     );
                                     l.map_err(|_| TransientError::SledTransactionError)?;
+                        }
+                        else {
+                            continue;
                         }
                         // NOTE: Use transaction to delete tomorrow, imma head out
                     }
@@ -94,14 +102,14 @@ impl DB {
                         meta.ttl = ttl_sec; 
                         freq.insert(
                             byte,
-                            meta.to_u8().expect("Cant serialize to u8"),
+                            meta.to_u8().map_err(|_| ConflictableTransactionError::Abort(()))?,
                         )?;
 
                     },
                     None => {
                         freq.insert(
                             byte,
-                            Metadata::new(ttl_sec).to_u8().expect("Cant serialize to u8"),
+                            Metadata::new(ttl_sec).to_u8().map_err(|_| ConflictableTransactionError::Abort(()))?,
                         )?;
 
                     }
