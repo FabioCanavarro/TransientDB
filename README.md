@@ -104,4 +104,4 @@ If you're interested in helping, please:
 We are building a welcoming and collaborative community. Let's build something great together!
 
 ## 📜 License
-This project is licensed under the ![MIT license](http://opensource.org/licenses/MIT)
+This project is licensed under the [MIT license](http://opensource.org/licenses/MIT)
