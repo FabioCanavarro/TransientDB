@@ -21,6 +21,8 @@ impl DB {
         let data_tree_clone = Arc::clone(&data_tree);
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
+        // TODO: Later have a clean up thread that checks if the following thread is fine and spawn
+        // it back and join the thread lol
         let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(
             move || {
                 loop {
