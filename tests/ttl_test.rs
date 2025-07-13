@@ -9,16 +9,14 @@ fn test_ttl() {
 
     let db = DB::new(&temp_dir.path()).unwrap();
 
-    db.set("user:1", "Alice", Some(Duration::new(10, 0)))
+    db.set("user:1", "Alice", Some(Duration::new(5, 0)))
         .unwrap();
-    db.set("user:2", "Alice", Some(Duration::new(100, 0)))
-        .unwrap();
-    db.set("user:5", "Alice", Some(Duration::new(100, 0)))
-        .unwrap();
-    db.set("user:10", "Alice", Some(Duration::new(1000, 0)))
-        .unwrap();
-
-    sleep(Duration::new(10, 0));
 
     assert_eq!("Alice", db.get("user:1").unwrap().unwrap());
+
+    sleep(Duration::new(6, 0));
+
+
+    assert_eq!(None, db.get("user:1").unwrap());
+
 }
