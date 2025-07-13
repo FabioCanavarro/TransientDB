@@ -11,7 +11,7 @@ pub struct Metadata {
     pub freq: u64,
     // NOTE: second since the Unix epoch
     pub created_at: u64,
-    pub ttl: Option<u64>
+    pub ttl: Option<u64>,
 }
 
 impl Metadata {
@@ -23,7 +23,7 @@ impl Metadata {
         Metadata {
             freq: 0,
             created_at: currtime,
-            ttl
+            ttl,
         }
     }
 

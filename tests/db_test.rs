@@ -1,4 +1,7 @@
-use std::{thread::sleep, time::{Duration, SystemTime, UNIX_EPOCH}};
+use std::{
+    thread::sleep,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use tempfile::tempdir;
 use transient_db::DB;
@@ -47,6 +50,11 @@ fn test_get_metadata() {
 
     sleep(Duration::new(1, 100));
 
-    assert!(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() > meta.created_at)
-
+    assert!(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+            > meta.created_at
+    )
 }
