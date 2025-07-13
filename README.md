@@ -24,10 +24,20 @@
 
 It provides a high-level, ergonomic API to solve common problems like caching, session management, and real-time analytics by treating data's **access frequency** and **age** as first-class citizens.
 
+## 🤔 Why TransientDB?
+
+Many applications need to handle data that isn't meant to live forever. Think of user sessions, cached API responses, or event streams. Managing this "transient" data can be complex. You need to worry about:
+
+* **Performance:** How do you track usage without slowing down your main application?
+* **Storage:** How do you prevent old, unused data from filling up your disk?
+* **Concurrency:** How do you handle everything safely in a multi-threaded environment?
+
+`TransientDB` solves these problems out-of-the-box with a clean, simple API.
+
 ## ✨ Core Features
 
-* **Intelligent Data Lifecycle:** Automatically manages data retention with a configurable grace period and frequency threshold. Old, unused data is gracefully pruned.
-* **Performance-First Architecture:** Uses a two-tree system to separate "hot," frequently-updated metadata from "cold," larger data blobs. This maximizes `sled`'s page cache efficiency and prevents cache pollution.
+* **Intelligent Data Lifecycle:** Automatically prunes old, unused data based on a configurable grace period and frequency threshold.
+* **Performance-First Architecture:** Uses a multi-tree system to separate "hot," frequently-updated metadata from "cold," larger data blobs. This maximizes `sled`'s page cache efficiency.
 * **Concurrency-Safe by Design:** All core operations are thread-safe. Frequency counters are updated atomically using race-proof `compare-and-swap` loops.
 * **Durable & Crash-Safe:** Inherits the industrial-strength durability and crash-safety guarantees of `sled`'s Write-Ahead Log.
 * **Ergonomic API:** Provides a simple, high-level API that abstracts away the complexity of the underlying storage engine.
@@ -38,7 +48,7 @@ Get started with `TransientDB` by adding it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-transient-db = "0.1.0"
+transient-db = "0.2.0"
 ````
 
 ### Basic Usage
@@ -46,13 +56,15 @@ transient-db = "0.1.0"
 ```rust
 use transient_db::DB;
 use std::path::Path;
+use std::time::Duration;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Open the database. It will be created if it doesn't exist.
     let db = DB::new(Path::new("./my_database"))?;
 
-    // 2. Set a value. Metadata (frequency, created_at) is handled automatically.
-    db.set("user:1", "Alice")?;
+    // 2. Set a value with a 60-second Time-To-Live (TTL).
+    // Metadata (frequency, created_at) is handled automatically.
+    db.set("user:1", "Alice", Some(Duration::from_secs(60)))?;
     
     // 3. Get the value back.
     if let Some(value) = db.get("user:1")? {
@@ -62,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 4. Increment the frequency counter safely across multiple threads.
     db.increment_frequency("user:1")?;
 
-    // 5. Remove data atomically from both the data and metadata stores.
+    // 5. Remove data atomically from all trees.
     db.remove("user:1")?;
 
     Ok(())
@@ -77,7 +89,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
       * [x] Two-tree architecture (`data_tree`, `metadata_tree`).
       * [x] Core API (`set`, `get`, `remove`, `increment_frequency`).
-      * [ ] Robust TTL / Data Lifecycle background thread.
+      * [x] Robust TTL / Data Lifecycle background thread.
       * [ ] Polished documentation and examples.
 
   * **V2 (Production Readiness)**
