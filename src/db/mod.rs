@@ -36,7 +36,6 @@ impl DB {
                         let key_byte = full_key.1;
                         let time_byte: [u8; 8] = (&full_key.0[..8]).try_into().map_err(|_| TransientError::ParsingToByteError)?;
                         let time = u64::from_be_bytes(time_byte);
-                        let key = from_utf8(&key_byte[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string();
                         let curr_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs();
 
                         if curr_time >= time {
@@ -45,18 +44,9 @@ impl DB {
                                         {
                                             let byte = &key_byte;
                                             data.remove(byte)?;
-                                            let meta = freq.get(&byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
-                                            let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
                                             freq.remove(byte)?;
                                             
-                                            match time {
-                                                Some(t) => 
-                                                {
-                                                    let _ = ttl_tree_clone.remove([&t.to_be_bytes()[..], &byte[..]].concat());
-                                                },
-                                                None => ()
-                                                
-                                            }
+                                            let _ = ttl_tree_clone.remove([&time_byte, &byte[..]].concat());
 
                                             Ok(())
                                         }
