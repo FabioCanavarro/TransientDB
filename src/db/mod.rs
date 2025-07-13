@@ -26,26 +26,36 @@ impl DB {
         let data_tree = Arc::new(db.open_tree("data_tree")?);
         let meta_tree = Arc::new(db.open_tree("freq_tree")?);
         let ttl_tree = Arc::new(db.open_tree("ttl_tree")?);
+
         let ttl_tree_clone = Arc::clone(&ttl_tree);
         let meta_tree_clone = Arc::clone(&meta_tree);
         let data_tree_clone = Arc::clone(&data_tree);
+
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
+
         // TODO: Later have a clean up thread that checks if the following thread is fine and spawn
         // it back and join the thread lol
+        
         let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(move || {
             loop {
+
                 thread::sleep(Duration::new(0, 100000000));
+
                 if shutdown_clone.load(std::sync::atomic::Ordering::SeqCst) {
                     break;
                 }
+
                 let keys = ttl_tree_clone.iter();
+
                 for i in keys {
                     let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
+
                     // NOTE: The reason time is 14 u8s long is because it is being stored like
                     // this ([time,key], key) not ((time,key), key)
                     let key = full_key.0;
                     let key_byte = full_key.1;
+
                     if key.len() < 8 {
                         Err(TransientError::ParsingToU64ByteFailed)?
                     }
@@ -53,6 +63,7 @@ impl DB {
                     let time_byte: [u8; 8] = (&key[..8])
                         .try_into()
                         .map_err(|_| TransientError::ParsingToByteError)?;
+
                     let time = u64::from_be_bytes(time_byte);
                     let curr_time = SystemTime::now()
                         .duration_since(UNIX_EPOCH)
