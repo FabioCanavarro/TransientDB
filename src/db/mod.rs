@@ -40,19 +40,19 @@ impl DB {
                         let curr_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs();
 
                         if curr_time >= time {
-                            let byte = key_byte;
-                            let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
-                                        |(data, freq, ttl_tree)| 
+                            let l: Result<(), TransactionError<()>> = (&*data_tree_clone, &*meta_tree_clone, &*ttl_tree_clone).transaction(
+                                        |(data, freq, ttl_tree_clone)| 
                                         {
-                                            data.remove(*byte)?;
-                                            let meta = freq.get(byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
+                                            let byte = &key_byte;
+                                            data.remove(byte)?;
+                                            let meta = freq.get(&byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
                                             let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
-                                            freq.remove(*byte)?;
+                                            freq.remove(byte)?;
                                             
                                             match time {
                                                 Some(t) => 
                                                 {
-                                                    let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
+                                                    let _ = ttl_tree_clone.remove([&t.to_be_bytes()[..], &byte[..]].concat());
                                                 },
                                                 None => ()
                                                 
@@ -92,7 +92,7 @@ impl DB {
         };
 
 
-        let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<()>> = (&**data_tree, &**freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| {
 
                 match freq.get(byte)? {
@@ -175,7 +175,7 @@ impl DB {
         let freq_tree = &self.meta_tree;
         let ttl_tree = &self.ttl_tree;
         let byte = &key.as_bytes();
-        let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
+        let l: Result<(), TransactionError<()>> = (&**data_tree, &**freq_tree, &**ttl_tree).transaction(
             |(data, freq, ttl_tree)| 
             {
                 data.remove(*byte)?;
