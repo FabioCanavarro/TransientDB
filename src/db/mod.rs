@@ -13,10 +13,12 @@ impl DB {
             .cache_capacity(512 * 1024 * 1024)
             .open()?;
 
-        let data_tree = db.open_tree("data_tree")?;
-        let meta_tree = db.open_tree("freq_tree")?;
+        let data_tree = Arc::new(db.open_tree("data_tree")?);
+        let meta_tree = Arc::new(db.open_tree("freq_tree")?);
         let ttl_tree = Arc::new(db.open_tree("ttl_tree")?);
         let ttl_tree_clone = Arc::clone(&ttl_tree);
+        let meta_tree_clone = Arc::clone(&meta_tree);
+        let data_tree_clone = Arc::clone(&data_tree);
         let shutdown: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         let shutdown_clone = Arc::clone(&shutdown);
         let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(

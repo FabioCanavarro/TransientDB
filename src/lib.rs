@@ -7,8 +7,8 @@ pub mod metadata;
 
 #[derive(Debug)]
 pub struct DB {
-    data_tree: Tree,
-    meta_tree: Tree,
+    data_tree: Arc<Tree>,
+    meta_tree: Arc<Tree>,
     ttl_tree: Arc<Tree>,
     ttl_thread: Option<JoinHandle<Result<(), TransientError>>>,
     shutdown: Arc<AtomicBool>
