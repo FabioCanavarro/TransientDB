@@ -1,10 +1,10 @@
-use std::{time::{SystemTime, UNIX_EPOCH}};
+use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::Metadata;
 use bincode::{
     error::{DecodeError, EncodeError},
     serde::{decode_from_slice, encode_to_vec},
 };
-use crate::Metadata;
 
 impl Metadata {
     pub fn new(ttl: Option<u64>) -> Metadata {

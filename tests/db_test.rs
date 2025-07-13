@@ -1,5 +1,7 @@
 use std::{
-    sync::Arc, thread::{self, sleep}, time::{Duration, SystemTime, UNIX_EPOCH}
+    sync::Arc,
+    thread::{self, sleep},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use tempfile::tempdir;

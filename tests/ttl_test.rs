@@ -16,9 +16,7 @@ fn test_ttl() {
 
     sleep(Duration::new(6, 0));
 
-
     assert_eq!(None, db.get("user:1").unwrap());
-
 }
 
 #[test]
@@ -80,8 +78,12 @@ fn test_manual_removal_of_ttl_key() {
     let temp_dir = tempdir().unwrap();
     let db = DB::new(&temp_dir.path()).unwrap();
 
-    db.set("user:manual_delete", "David", Some(Duration::from_secs(120)))
-        .unwrap();
+    db.set(
+        "user:manual_delete",
+        "David",
+        Some(Duration::from_secs(120)),
+    )
+    .unwrap();
 
     assert!(db.get("user:manual_delete").unwrap().is_some());
     assert!(db.get_metadata("user:manual_delete").unwrap().is_some());

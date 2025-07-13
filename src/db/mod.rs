@@ -36,10 +36,9 @@ impl DB {
 
         // TODO: Later have a clean up thread that checks if the following thread is fine and spawn
         // it back and join the thread lol
-        
+
         let thread: JoinHandle<Result<(), TransientError>> = thread::spawn(move || {
             loop {
-
                 thread::sleep(Duration::new(0, 100000000));
 
                 if shutdown_clone.load(std::sync::atomic::Ordering::SeqCst) {
@@ -182,11 +181,9 @@ impl DB {
                 Some(meta.freq_incretement().to_u8()?),
             );
             match s {
-                Ok(ss) => {
-                    match ss {
-                        Ok(_) => break,
-                        Err(_) => ()
-                    }
+                Ok(ss) => match ss {
+                    Ok(_) => break,
+                    Err(_) => (),
                 },
                 Err(_) => (),
             }
