@@ -182,7 +182,12 @@ impl DB {
                 Some(meta.freq_incretement().to_u8()?),
             );
             match s {
-                Ok(_) => break,
+                Ok(ss) => {
+                    match ss {
+                        Ok(_) => break,
+                        Err(_) => ()
+                    }
+                },
                 Err(_) => (),
             }
         }
