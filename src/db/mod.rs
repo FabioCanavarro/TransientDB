@@ -31,11 +31,36 @@ impl DB {
                         let full_key = i.map_err(|e| TransientError::SledError { error: e })?;
                         // NOTE: The reason time is 14 u8s long is because it is being stored like
                         // this ([time,key], key) not ((time,key), key)
-                        let time = &full_key.0[..8];
-                        let key = full_key.1;
-                        let byte: [u8; 8] = time.try_into().map_err(|_| TransientError::ParsingToByteError)?;
-                        println!("{} : {}", from_utf8(&key[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string(),u64::from_be_bytes(byte));
-                        // SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs()
+                        let key_byte = full_key.1;
+                        let time_byte: [u8; 8] = (&full_key.0[..8]).try_into().map_err(|_| TransientError::ParsingToByteError)?;
+                        let time = u64::from_be_bytes(time_byte);
+                        let key = from_utf8(&key_byte[..]).map_err(|_| TransientError::ParsingToUTF8Error)?.to_string();
+                        let curr_time = SystemTime::now().duration_since(UNIX_EPOCH).expect("Cant get SystemTime").as_secs();
+
+                        if curr_time >= time {
+                            let byte = key_byte;
+                            let l: Result<(), TransactionError<()>> = (data_tree, freq_tree, &**ttl_tree).transaction(
+                                        |(data, freq, ttl_tree)| 
+                                        {
+                                            data.remove(*byte)?;
+                                            let meta = freq.get(byte)?.ok_or(ConflictableTransactionError::Abort(()))?;
+                                            let time = Metadata::from_u8(&meta.to_vec()).map_err(|_| ConflictableTransactionError::Abort(()))?.ttl;
+                                            freq.remove(*byte)?;
+                                            
+                                            match time {
+                                                Some(t) => 
+                                                {
+                                                    let _ = ttl_tree.remove([&t.to_be_bytes()[..], &byte[..]].concat());
+                                                },
+                                                None => ()
+                                                
+                                            }
+
+                                            Ok(())
+                                        }
+                                    );
+                                    l.map_err(|_| TransientError::SledTransactionError)?;
+                        }
                         // NOTE: Use transaction to delete tomorrow, imma head out
                     }
                 };
