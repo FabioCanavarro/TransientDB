@@ -32,9 +32,8 @@ pub mod metadata;
 ///
 /// This struct also holds 2 Arc<sled::Tree> directly instead of a single sled::Db,
 /// since almost all of the functions uses the tree directly which requires the sled::Db to
-/// constantly open each trees which is quite unnecesarry.
-/// Passing trees from the struct deletes the constant need to open the trees which improves
-/// performance
+/// constantly open each trees.
+/// Passing trees from the struct deletes the constant need to open the trees
 #[derive(Debug)]
 pub struct DB {
     /// Stores the key and value
@@ -43,7 +42,7 @@ pub struct DB {
     meta_tree: Arc<Tree>,
     /// Stores the ttl timestamp and the key
     ttl_tree: Arc<Tree>,
-    /// Is used to iterate checks on the key with the earliest ttl timestamp
+    /// Manage the background thread which checks for expired keys
     ttl_thread: Option<JoinHandle<Result<(), TransientError>>>,
     /// Signals the ttl_thread to gracefully shutdown, when the DB is dropped
     shutdown: Arc<AtomicBool>,
@@ -51,11 +50,10 @@ pub struct DB {
 
 /// Contains additional information about a key, such as its access frequency and lifecycle.
 ///
-/// NOTE: This struct derives SerializeandDeserialize to be stored as raw bytes (&[u8]) in the underlying sled tree.
+/// NOTE: This struct derives Serialize and Deserialize to be stored as raw bytes (&[u8]) in the underlying sled tree.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Metadata {
-    /// this is one of the key data that it holds which contain the amount of time the key has been
-    /// get
+    /// The number of time the key has been accessed
     pub freq: u64,
     /// Timestamp of key creation, in seconds since the UNIX epoch
     pub created_at: u64,
