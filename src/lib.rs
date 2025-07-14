@@ -30,46 +30,35 @@ pub mod metadata;
 /// When this struct is dropped, it will signal the background thread to shut down
 /// and wait for it to finish gracefully.
 ///
-/// The main reason to why it stores 2 sled::Tree instead of a single sled::Db,
-/// stems from the fact that almost all of the functions trees needs to be open which wastes some perfomance
-/// passing trees from the struct deletes the need of constant opening of the trees which increase
+/// This struct also holds 2 Arc<sled::Tree> directly instead of a single sled::Db,
+/// since almost all of the functions uses the tree directly which requires the sled::Db to
+/// constantly open each trees which is quite unnecesarry.
+/// Passing trees from the struct deletes the constant need to open the trees which improves
 /// performance
 #[derive(Debug)]
 pub struct DB {
-    /// the tree which stores the key and value
+    /// Stores the key and value
     data_tree: Arc<Tree>,
-    /// the tree which stores the key and the metadata
+    /// Stores the key and the metadata
     meta_tree: Arc<Tree>,
-    /// the tree which stores the ttl timestamp and the key
+    /// Stores the ttl timestamp and the key
     ttl_tree: Arc<Tree>,
-    /// the thread that is used to iterate checks on the key with the earliest ttl timestamp
+    /// Is used to iterate checks on the key with the earliest ttl timestamp
     ttl_thread: Option<JoinHandle<Result<(), TransientError>>>,
-    /// the shutdown bool which tells the tt_thread that the DB is dropped so that the ttl_thread
-    /// can join succesfully
+    /// Signals the ttl_thread to gracefully shutdown, when the DB is dropped
     shutdown: Arc<AtomicBool>,
 }
 
-/// This is a struct which contains all the key's additional information.
+/// Contains additional information about a key, such as its access frequency and lifecycle.
 ///
-/// This struct contains the Serialize and Deserialize traits from serde as it is constantly
-/// serialize into a &[u8] before being inserted into a tree and Deserialize when getting it from
-/// the tree, for the reason that sled::tree only works with IVecs, where one of the supported
-/// From<T> -> IVec  types is the &[u8]
+/// NOTE: This struct derives SerializeandDeserialize to be stored as raw bytes (&[u8]) in the underlying sled tree.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Metadata {
     /// this is one of the key data that it holds which contain the amount of time the key has been
     /// get
     pub freq: u64,
-    /// This is the created_at param which holds timestamp at which the key is created at, 
-    /// 
-    /// The timestamp is stored by getting the time since UNIX EPOCH as seconds
-    /// so that it will be easier to just compare the time it is created to the current time,
-    /// instead of having many extra functions
+    /// Timestamp of key creation, in seconds since the UNIX epoch
     pub created_at: u64,
-    /// This is the ttl param which holds the time it has left to live, before it expires and gets
-    /// deleted
-    ///
-    /// The ttl is stored in an Option<> to signify that the use of a ttl param is not a must which
-    /// gives more flexibility to the user
+    /// The key's time-to-live in seconds. If None, the key is persistent and never expires.
     pub ttl: Option<u64>,
 }
