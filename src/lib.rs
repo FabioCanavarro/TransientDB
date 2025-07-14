@@ -10,7 +10,7 @@
 //! It provides a high-level, ergonomic API by treating data's **access frequency**
 //! and **age** as first-class citizens.
 
-use db::errors::TransientError;
+use errors::TransientError;
 use serde::{Deserialize, Serialize};
 use sled::Tree;
 use std::{
@@ -20,6 +20,7 @@ use std::{
 
 pub mod db;
 pub mod metadata;
+pub mod errors
 
 /// This is the main struct which represents the database.
 ///
@@ -36,15 +37,15 @@ pub mod metadata;
 /// Passing trees from the struct deletes the constant need to open the trees
 #[derive(Debug)]
 pub struct DB {
-    /// Stores the key and value
+    // Stores the key and value
     data_tree: Arc<Tree>,
-    /// Stores the key and the metadata
+    // Stores the key and the metadata
     meta_tree: Arc<Tree>,
-    /// Stores the ttl timestamp and the key
+    // Stores the ttl timestamp and the key
     ttl_tree: Arc<Tree>,
-    /// Manage the background thread which checks for expired keys
+    // Manage the background thread which checks for expired keys
     ttl_thread: Option<JoinHandle<Result<(), TransientError>>>,
-    /// Signals the ttl_thread to gracefully shutdown, when the DB is dropped
+    // Signals the ttl_thread to gracefully shutdown, when the DB is dropped
     shutdown: Arc<AtomicBool>,
 }
 
