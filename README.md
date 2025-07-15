@@ -85,7 +85,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
       * [x] Two-tree architecture (`data_tree`, `metadata_tree`).
       * [x] Core API (`set`, `get`, `remove`, `increment_frequency`).
       * [x] Robust TTL / Data Lifecycle background thread.
-      * [ ] Polished documentation and examples.
+      * [x] Polished documentation and examples.
 
   * **V2 (Production Readiness)**
 
