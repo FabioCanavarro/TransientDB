@@ -11,10 +11,6 @@
   <a href="https://crates.io/crates/transient_db"><img src="https://img.shields.io/crates/v/transient_db.svg" alt="Crates.io"></a>
   <a href="https://docs.rs/transient-db"><img src="https://docs.rs/transient_db/badge.svg" alt="Docs.rs"></a>
   <a href="https://github.com/FabioCanavarro/TransientDB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
-  
-
-  
-
 </p>
 
 ---
