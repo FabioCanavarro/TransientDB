@@ -1,3 +1,7 @@
+//! The `db` module contains the core logic for the TransientDB database.
+//! It includes the `DB` struct and its implementation, which provides the
+//! primary API for interacting with the database.
+
 pub mod errors;
 
 use errors::TransientError;
@@ -17,6 +21,15 @@ use std::{
 use crate::{DB, Metadata};
 
 impl DB {
+    /// Creates a new `DB` instance or opens an existing one at the specified path.
+    ///
+    /// This function initializes the underlying `sled` database, opens the required
+    /// data trees (`data_tree`, `meta_tree`, `ttl_tree`), and spawns a background
+    /// thread to handle TTL expirations.
+    ///
+    /// # Errors
+    ///
+    /// Returns a `sled::Error` if the database cannot be opened at the given path.
     pub fn new(path: &Path) -> Result<DB, sled::Error> {
         let db = Config::new()
             .path(path)
@@ -86,7 +99,6 @@ impl DB {
                     } else {
                         continue;
                     }
-                    // NOTE: Use transaction to delete tomorrow, imma head out
                 }
             }
             Ok(())
@@ -99,6 +111,15 @@ impl DB {
             shutdown,
         })
     }
+
+    /// Sets a key-value pair with an optional Time-To-Live (TTL).
+    ///
+    /// If the key already exists, its value and TTL will be updated.
+    /// If `ttl` is `None`, the key will be persistent.
+    ///
+    /// # Errors
+    ///
+    /// This function can return an error if there's an issue with the underlying
     pub fn set(&self, key: &str, val: &str, ttl: Option<Duration>) -> Result<(), Box<dyn Error>> {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
@@ -156,6 +177,12 @@ impl DB {
         Ok(())
     }
 
+    /// Retrieves the value for a given key.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the value cannot be retrieved from the database or if
+    /// the value is not valid UTF-8.
     pub fn get(&self, key: &str) -> Result<Option<String>, Box<dyn Error>> {
         let data_tree = &self.data_tree;
         let byte = key.as_bytes();
@@ -166,6 +193,12 @@ impl DB {
         }
     }
 
+    /// Atomically increments the frequency counter for a given key.
+    ///
+    /// # Errors
+    ///
+    /// This function can return an error if the key does not exist or if there
+    /// is an issue with the compare-and-swap operation.
     pub fn increment_frequency(&self, key: &str) -> Result<(), Box<dyn Error>> {
         let freq_tree = &self.meta_tree;
         let byte = &key.as_bytes();
@@ -192,6 +225,11 @@ impl DB {
         Ok(())
     }
 
+    /// Removes a key-value pair and its associated metadata from the database.
+    ///
+    /// # Errors
+    ///
+    /// Can return an error if the transaction to remove the data fails.
     pub fn remove(&self, key: &str) -> Result<(), Box<dyn Error>> {
         let data_tree = &self.data_tree;
         let freq_tree = &self.meta_tree;
@@ -221,6 +259,11 @@ impl DB {
         Ok(())
     }
 
+    /// Retrieves the metadata for a given key.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the metadata cannot be retrieved or deserialized.
     pub fn get_metadata(&self, key: &str) -> Result<Option<Metadata>, Box<dyn Error>> {
         let freq_tree = &self.meta_tree;
         let byte = key.as_bytes();
@@ -233,6 +276,8 @@ impl DB {
 }
 
 impl Drop for DB {
+    /// Gracefully shuts down the TTL background thread when the `DB` instance
+    /// goes out of scope.
     fn drop(&mut self) {
         self.shutdown
             .store(true, std::sync::atomic::Ordering::SeqCst);
