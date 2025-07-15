@@ -43,7 +43,7 @@ Get started with `TransientDB` by adding it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-transient-db = "0.2.0"
+transient-db = "0.3.6"
 ````
 
 ### Basic Usage
