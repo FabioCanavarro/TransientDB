@@ -1,5 +1,5 @@
-use transient_db::DB;
 use std::path::Path;
+use transient_db::DB;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = DB::new(Path::new("./my_database"))?;

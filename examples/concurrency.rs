@@ -1,6 +1,6 @@
-use transient_db::DB;
 use std::sync::Arc;
 use std::thread;
+use transient_db::DB;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = Arc::new(DB::new("./my_database".as_ref())?);

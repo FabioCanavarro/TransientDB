@@ -29,7 +29,9 @@ impl Display for TransientError {
             TransientError::ParsingToUTF8Error => writeln!(f, "Parsing to utf8 failed"),
             TransientError::SledError { error } => writeln!(f, "Sled failed {}", error),
             TransientError::SledTransactionError => writeln!(f, "Sled Transaction failed"),
-            TransientError::ParsingToU64ByteFailed => writeln!(f, "Failed to parse a variable to a U64 byte [u8; 8]")
+            TransientError::ParsingToU64ByteFailed => {
+                writeln!(f, "Failed to parse a variable to a U64 byte [u8; 8]")
+            }
         }
     }
 }
