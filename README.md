@@ -8,8 +8,8 @@
 
 <p align="center">
   <a href="https://github.com/FabioCanavarro/EpochDB/actions/workflows/rust.yml"><img src="https://github.com/FabioCanavarro/EpochDB/actions/workflows/rust.yml/badge.svg" alt="CI Status"></a>
-  <a href="https://crates.io/crates/transient_db"><img src="https://img.shields.io/crates/v/transient_db.svg" alt="Crates.io"></a>
-  <a href="https://docs.rs/transient-db"><img src="https://docs.rs/transient_db/badge.svg" alt="Docs.rs"></a>
+  <a href="https://crates.io/crates/epoch-db"><img src="https://img.shields.io/crates/v/epoch-db.svg" alt="Crates.io"></a>
+  <a href="https://docs.rs/epoch-db"><img src="https://docs.rs/epoch-db/badge.svg" alt="Docs.rs"></a>
   <a href="https://github.com/FabioCanavarro/EpochDB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
 </p>
 
@@ -43,13 +43,13 @@ Get started with `EpochDB` by adding it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-transient-db = "0.3.6"
+epoch-db = "0.1.5"
 ````
 
 ### Basic Usage
 
 ```rust
-use transient_db::DB;
+use epoch_db::DB;
 use std::path::Path;
 use std::time::Duration;
 
