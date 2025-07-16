@@ -7,19 +7,19 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/FabioCanavarro/TransientDB/actions/workflows/rust.yml"><img src="https://github.com/FabioCanavarro/TransientDB/actions/workflows/rust.yml/badge.svg" alt="CI Status"></a>
+  <a href="https://github.com/FabioCanavarro/EpochDB/actions/workflows/rust.yml"><img src="https://github.com/FabioCanavarro/EpochDB/actions/workflows/rust.yml/badge.svg" alt="CI Status"></a>
   <a href="https://crates.io/crates/transient_db"><img src="https://img.shields.io/crates/v/transient_db.svg" alt="Crates.io"></a>
   <a href="https://docs.rs/transient-db"><img src="https://docs.rs/transient_db/badge.svg" alt="Docs.rs"></a>
-  <a href="https://github.com/FabioCanavarro/TransientDB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
+  <a href="https://github.com/FabioCanavarro/EpochDB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg" alt="License"></a>
 </p>
 
 ---
 
-**TransientDB** is not just another key-value store. It's an opinionated database engine built on the robust foundation of [`sled`](https://github.com/spacejam/sled), designed specifically for workloads where the relevance of data changes over time.
+**EpochDB** is not just another key-value store. It's an opinionated database engine built on the robust foundation of [`sled`](https://github.com/spacejam/sled), designed specifically for workloads where the relevance of data changes over time.
 
 It provides a high-level, ergonomic API to solve common problems like caching, session management, and real-time analytics by treating data's **access frequency** and **age** as first-class citizens.
 
-## 🤔 Why TransientDB?
+## 🤔 Why EpochDB?
 
 Many applications need to handle data that isn't meant to live forever. Think of user sessions, cached API responses, or event streams. Managing this "transient" data can be complex. You need to worry about:
 
@@ -27,7 +27,7 @@ Many applications need to handle data that isn't meant to live forever. Think of
 * **Storage:** How do you prevent old, unused data from filling up your disk?
 * **Concurrency:** How do you handle everything safely in a multi-threaded environment?
 
-`TransientDB` solves these problems out-of-the-box with a clean, simple API.
+`EpochDB` solves these problems out-of-the-box with a clean, simple API.
 
 ## ✨ Core Features
 
@@ -39,7 +39,7 @@ Many applications need to handle data that isn't meant to live forever. Think of
 
 ## 🚀 Quick Start
 
-Get started with `TransientDB` by adding it to your `Cargo.toml`:
+Get started with `EpochDB` by adding it to your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -78,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## 🗺️ Roadmap
 
-`TransientDB` is actively being developed. Our goal is to create the best tool for managing ephemeral and usage-tracked data in the Rust ecosystem.
+`EpochDB` is actively being developed. Our goal is to create the best tool for managing ephemeral and usage-tracked data in the Rust ecosystem.
 
   * **V1 (The Core Engine)**
 
@@ -106,7 +106,7 @@ Contributions are welcome and greatly appreciated\! This project is a fantastic 
 If you're interested in helping, please:
 
 1.  Fork the repository.
-2.  Take a look at our [Roadmap](#roadmap) and the open [Issues](https://github.com/FabioCanavarro/TransientDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
+2.  Take a look at our [Roadmap](#roadmap) and the open [Issues](https://github.com/FabioCanavarro/EpochDB/issues). Issues marked with `[Help Wanted]` or `good first issue` are great places to start.
 3.  Feel free to open a new issue to discuss a feature or a bug.
 4.  Submit a pull request with your changes. Please ensure your code is tested and documented.
 
