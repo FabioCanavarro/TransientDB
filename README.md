@@ -1,4 +1,4 @@
-# TransientDB 🦀
+# EpochDB 🦀
 
 <p align="center">
   <img src="https://github.com/TheZoq2/ferris/blob/master/animated/output/wave.gif?raw=true" width="200" alt="Ferris the crab animation :)">
