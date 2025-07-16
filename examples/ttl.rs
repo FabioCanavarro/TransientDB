@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
-use transient_db::DB;
+use epoch_db::DB;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = DB::new(Path::new("./my_database"))?;

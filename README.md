@@ -1,3 +1,12 @@
+# This project has moved!
+
+The `transient-db` crate has been renamed and is now being actively developed as **`EpochDB`**.
+
+This repository is now archived and will not receive further updates.
+
+### Please visit the new repository: [github.com/FabioCanavarro/EpochDB](https://github.com/FabioCanavarro/EpochDB)
+
+
 # TransientDB 🦀
 
 <p align="center">

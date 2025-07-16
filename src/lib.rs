@@ -1,9 +1,9 @@
-//! # TransientDB 🦀
+//! # EpochDB 🦀
 //!
 //! An intelligent, persistent, and concurrent key-value store for Rust,
 //! designed to manage data with a lifecycle.
 //!
-//! **TransientDB** is an opinionated database engine built on the robust foundation of `sled`.
+//! **EpochDB** is an opinionated database engine built on the robust foundation of `sled`.
 //! It's designed specifically for workloads where the relevance of data changes over time,
 //! such as caching, session management, and real-time analytics.
 //!

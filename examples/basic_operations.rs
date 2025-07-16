@@ -1,6 +1,6 @@
 use std::path::Path;
 use std::time::Duration;
-use transient_db::DB;
+use epoch_db::DB;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Open the database. It will be created if it doesn't exist.
