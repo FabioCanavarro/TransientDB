@@ -5,7 +5,7 @@ use std::{
 };
 
 use tempfile::tempdir;
-use transient_db::DB;
+use epoch_db::DB;
 
 #[test]
 fn test_set() {
