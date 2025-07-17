@@ -273,6 +273,18 @@ impl DB {
             None => Ok(None),
         }
     }
+
+    pub fn backup_to(&self, path: &Path) -> Result<(), Box<dyn Error>> {
+        self.data_tree.flush()?;
+        self.meta_tree.flush()?;
+        self.ttl_tree.flush()?;
+
+        todo!()
+    }
+
+    pub fn load_from(path: &Path) -> Result<DB, Box<dyn Error>> {
+        todo!()
+    }
 }
 
 impl Drop for DB {
