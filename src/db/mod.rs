@@ -9,11 +9,11 @@ use sled::{
     Config,
     transaction::{ConflictableTransactionError, TransactionError, Transactional},
 };
-use zip::ZipWriter;
+use zip::{write::FileOptions, ZipWriter};
 use std::{
-    env::current_dir, error::Error, fs::{create_dir, File}, path::{Path, PathBuf}, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
+    env::current_dir, error::Error, fs::{create_dir, File}, io::{self, Write}, path::{Path, PathBuf}, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
 };
-
+use std::io::Read;
 use crate::{DB, Metadata};
 
 impl DB {
@@ -280,19 +280,34 @@ impl DB {
             Err(TransientError::FolderNotFound { path: &path })?;
         }
 
-        let mut files: Vec<&Path> = Vec::new();
-
-        for entry in self.path.read_dir()? {
-            let e = entry?;
-            if e.path().is_file() {
-                files.push(&e.path());
-            }
-        }
         
         // WARN: Temporary
-        let file = File::create(path.join("1"))?;
+        let zip_file = File::create(path.join("backup.zip"))?;
 
-        let zipw = ZipWriter::new(file);
+        let mut zipw = ZipWriter::new(zip_file);
+
+        for entry in self.path.read_dir()? {
+            let e = entry?.path();
+            if e.is_file() {
+                let file = File::open(e)?;
+
+                zipw.start_file(
+                    e.file_name()
+                        .ok_or(TransientError::FileNameDoesntExist)?
+                        .to_str().ok_or(TransientError::FileNameDoesntExist)?,
+                    FileOptions::default().
+                        compression_method(
+                            zip::CompressionMethod::Bzip2
+                        )
+                )?;
+
+                let mut buffer = Vec::new();
+
+                io::copy(&mut file.take(u64::MAX), &mut buffer)?;
+
+                zipw.write_all(&buffer)?;
+            }
+        }
         
         Ok(())
 
