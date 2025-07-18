@@ -11,7 +11,7 @@ use sled::{
 };
 use zip::ZipWriter;
 use std::{
-    env::current_dir, error::Error, fs::create_dir, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
+    env::current_dir, error::Error, fs::{create_dir, File}, path::{Path, PathBuf}, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
 };
 
 use crate::{DB, Metadata};
@@ -280,6 +280,19 @@ impl DB {
             Err(TransientError::FolderNotFound { path: &path })?;
         }
 
+        let mut files: Vec<&Path> = Vec::new();
+
+        for entry in self.path.read_dir()? {
+            let e = entry?;
+            if e.path().is_file() {
+                files.push(&e.path());
+            }
+        }
+        
+        // WARN: Temporary
+        let file = File::create(path.join("1"))?;
+
+        let zipw = ZipWriter::new(file);
         
         Ok(())
 
