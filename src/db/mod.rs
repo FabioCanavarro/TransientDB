@@ -9,13 +9,9 @@ use sled::{
     Config,
     transaction::{ConflictableTransactionError, TransactionError, Transactional},
 };
+use zip::ZipWriter;
 use std::{
-    error::Error,
-    path::Path,
-    str::from_utf8,
-    sync::{Arc, atomic::AtomicBool},
-    thread::{self, JoinHandle},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    env::current_dir, error::Error, fs::create_dir, path::Path, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
 };
 
 use crate::{DB, Metadata};
@@ -109,6 +105,7 @@ impl DB {
             ttl_tree,
             ttl_thread: Some(thread),
             shutdown,
+            path: path.to_path_buf()
         })
     }
 
@@ -279,7 +276,13 @@ impl DB {
         self.meta_tree.flush()?;
         self.ttl_tree.flush()?;
 
-        todo!()
+        if !path.is_dir() {
+            Err(TransientError::FolderNotFound { path: &path })?;
+        }
+
+        
+        Ok(())
+
     }
 
     pub fn load_from(path: &Path) -> Result<DB, Box<dyn Error>> {

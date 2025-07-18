@@ -3,7 +3,6 @@ use std::time::Duration;
 use epoch_db::DB;
 
 
-// NOTE: Testing to see what sled outputs
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = DB::new(Path::new("./my_database"))?;
 
