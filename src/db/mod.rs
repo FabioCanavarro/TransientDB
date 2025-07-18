@@ -281,32 +281,42 @@ impl DB {
         }
 
         let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
+        println!("here");
 
         
         // WARN: Temporary
         let zip_file = File::create(path.join("backup.zip"))?;
+        println!("here");
 
         let mut zipw = ZipWriter::new(zip_file);
+        println!("here");
 
         for entry in self.path.read_dir()? {
+            println!("{}");
             let e = entry?.path();
             if e.is_file() {
                 let file = File::open(&e)?;
+                println!("this");
                 let file_name = e.file_name()
                         .ok_or(TransientError::FileNameDoesntExist)?
                         .to_str().ok_or(TransientError::FileNameDoesntExist)?;
 
+                println!("this??");
                 zipw.start_file(
                     file_name,
                     options
                     
                 )?;
+                println!("thisss");
 
                 let mut buffer = Vec::new();
+                println!("threre");
 
                 io::copy(&mut file.take(u64::MAX), &mut buffer)?;
+                println!("thus");
 
                 zipw.write_all(&buffer)?;
+                println!("Boom");
             }
         }
         
