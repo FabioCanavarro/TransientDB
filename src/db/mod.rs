@@ -9,7 +9,7 @@ use sled::{
     Config,
     transaction::{ConflictableTransactionError, TransactionError, Transactional},
 };
-use zip::{write::FileOptions, ZipWriter};
+use zip::{write::{FileOptions, SimpleFileOptions}, ZipWriter};
 use std::{
     env::current_dir, error::Error, fs::{create_dir, File}, io::{self, Write}, path::{Path, PathBuf}, str::from_utf8, sync::{atomic::AtomicBool, Arc}, thread::{self, JoinHandle}, time::{Duration, SystemTime, UNIX_EPOCH}
 };
@@ -277,8 +277,10 @@ impl DB {
         self.ttl_tree.flush()?;
 
         if !path.is_dir() {
-            Err(TransientError::FolderNotFound { path: &path })?;
+            Err(TransientError::FolderNotFound { path: path.to_path_buf() })?;
         }
+
+        let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Bzip2);
 
         
         // WARN: Temporary
@@ -289,16 +291,15 @@ impl DB {
         for entry in self.path.read_dir()? {
             let e = entry?.path();
             if e.is_file() {
-                let file = File::open(e)?;
+                let file = File::open(&e)?;
+                let file_name = e.file_name()
+                        .ok_or(TransientError::FileNameDoesntExist)?
+                        .to_str().ok_or(TransientError::FileNameDoesntExist)?;
 
                 zipw.start_file(
-                    e.file_name()
-                        .ok_or(TransientError::FileNameDoesntExist)?
-                        .to_str().ok_or(TransientError::FileNameDoesntExist)?,
-                    FileOptions::default().
-                        compression_method(
-                            zip::CompressionMethod::Bzip2
-                        )
+                    file_name,
+                    options
+                    
                 )?;
 
                 let mut buffer = Vec::new();
