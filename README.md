@@ -1,7 +1,7 @@
 # EpochDB 🦀
 
 <p align="center">
-  <img src="https://github.com/TheZoq2/ferris/blob/master/animated/output/wave.gif?raw=true" width="200" alt="Ferris the crab animation :)">
+  <img src="https://github.com/TheZoq2/ferris/blob/master/animated/output/wave.gif?raw=true" width="200" alt="Ferris the crab gif :)">
   <br>
   An intelligent, persistent, and concurrent key-value store for Rust, designed to manage data with a lifecycle.
 </p>
